@@ -3,10 +3,12 @@ import math
 from queue import PriorityQueue
 import random
 
+# Window size setup
 WIDTH = 800
 WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("A* Path Finding Algorithm")
 
+# Define colors
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 255, 0)
@@ -18,7 +20,8 @@ ORANGE = (255, 165 ,0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
 
-class Spot:
+# Class representing a single grid cell
+class Node:
 	def __init__(self, row, col, width, total_rows):
 		self.row = row
 		self.col = col
@@ -32,6 +35,7 @@ class Spot:
 	def get_pos(self):
 		return self.row, self.col
 
+	# Checking different states of a cell
 	def is_closed(self):
 		return self.color == RED
 
@@ -50,6 +54,7 @@ class Spot:
 	def reset(self):
 		self.color = WHITE
 
+	# Set colors for different types of points
 	def make_start(self):
 		self.color = ORANGE
 
@@ -68,9 +73,11 @@ class Spot:
 	def make_path(self):
 		self.color = PURPLE
 
+	# Draw the cell
 	def draw(self, win):
 		pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
 
+	# Update neighboring cells
 	def update_neighbors(self, grid):
 		self.neighbors = []
 		if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier(): # DOWN
@@ -89,12 +96,14 @@ class Spot:
 		return False
 
 
+# Heuristic function (Manhattan distance)
 def h(p1, p2):
 	x1, y1 = p1
 	x2, y2 = p2
 	return abs(x1 - x2) + abs(y1 - y2)
 
 
+# Reconstruct the shortest path
 def reconstruct_path(came_from, current, draw):
 	while current in came_from:
 		current = came_from[current]
@@ -102,14 +111,15 @@ def reconstruct_path(came_from, current, draw):
 		draw()
 
 
+# A* algorithm for pathfinding
 def algorithm(draw, grid, start, end):
 	count = 0
 	open_set = PriorityQueue()
 	open_set.put((0, count, start))
 	came_from = {}
-	g_score = {spot: float("inf") for row in grid for spot in row}
+	g_score = {node: float("inf") for row in grid for node in row}
 	g_score[start] = 0
-	f_score = {spot: float("inf") for row in grid for spot in row}
+	f_score = {node: float("inf") for row in grid for node in row}
 	f_score[start] = h(start.get_pos(), end.get_pos())
 
 	open_set_hash = {start}
@@ -148,18 +158,20 @@ def algorithm(draw, grid, start, end):
 	return False
 
 
+# Create grid
 def make_grid(rows, width):
 	grid = []
 	gap = width // rows
 	for i in range(rows):
 		grid.append([])
 		for j in range(rows):
-			spot = Spot(i, j, gap, rows)
+			spot = Node(i, j, gap, rows)
 			grid[i].append(spot)
 
 	return grid
 
 
+# Draw grid lines
 def draw_grid(win, rows, width):
 	gap = width // rows
 	for i in range(rows):
@@ -172,22 +184,22 @@ def draw(win, grid, rows, width):
 	win.fill(WHITE)
 
 	for row in grid:
-		for spot in row:
-			spot.draw(win)
+		for node in row:
+			node.draw(win)
 
 	draw_grid(win, rows, width)
 	pygame.display.update()
 
-
+# Generate random obstacles and start and end point
 def generate_maze(grid):
-    num_obsticles = random.randint(3001, 6001)
+    num_obsticles = random.randint(501, 1001)
     for _ in range(num_obsticles):
-        x = random.randint(0, 99)
-        y = random.randint(0, 99)
+        x = random.randint(0, 49)
+        y = random.randint(0, 49)
         grid[x][y].make_barrier()
     
     start = grid[5][5]
-    end = grid[95][95]
+    end = grid[45][45]
     start.make_start()
     end.make_end()
     
@@ -195,7 +207,7 @@ def generate_maze(grid):
 
 
 def main(win, width):
-	ROWS = 100
+	ROWS = 50
 	grid = make_grid(ROWS, width)
 	start, end = generate_maze(grid)
 
@@ -203,18 +215,18 @@ def main(win, width):
 	while run:
 		draw(win, grid, ROWS, width)
 		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
+			if event.type == pygame.QUIT:	# Quit the algorithm by exiting pygame
 				run = False
 
 			if event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_SPACE:
+				if event.key == pygame.K_SPACE:	# Start the algorithm by pressing space-key
 					for row in grid:
-						for spot in row:
-							spot.update_neighbors(grid)
+						for node in row:
+							node.update_neighbors(grid)
 
 					algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
 
-				if event.key == pygame.K_c:
+				if event.key == pygame.K_c:	# Reset the enviroment by pressing c-key
 					grid = make_grid(ROWS, width)
 					start, end = generate_maze(grid)
      
