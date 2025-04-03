@@ -16,7 +16,7 @@ This project is a visualization of the A* pathfinding algorithm using Python and
 *   Red -> Closed nodes
 *   Purple -> Final path
 ## Requirements
-nsure you have Python 3.x and Pygame installed.
+Ensure you have Python 3.x and Pygame installed.
 ## Code Structure
 *   Node class: Represents each grid cell.
 *   algorithm(): Implements the A* pathfinding algorithm.
